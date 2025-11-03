@@ -11,7 +11,13 @@
 
 /* ========== BASE ========== */
 body {
-  background: radial-gradient(circle at top left, #001f3f, #001c33 30%, #000814 70%, #000000 100%),
+  background: radial-gradient(
+      circle at top left,
+      #001f3f,
+      #001c33 30%,
+      #000814 70%,
+      #000000 100%
+    ),
     linear-gradient(135deg, #0a0f1e 0%, #001933 50%, #000a14 100%);
   background-blend-mode: overlay;
   color: var(--text-color);
@@ -19,6 +25,7 @@ body {
   min-height: 100vh;
   padding: 10rem 12% 6rem;
   overflow-x: hidden;
+  transition: padding 0.3s ease; /* Added for smooth padding changes */
 }
 
 /* ========== HEADER ========== */
@@ -32,6 +39,7 @@ body {
   font-weight: 800;
   color: var(--main-color);
   text-shadow: var(--glow);
+  transition: font-size 0.3s ease; /* Added for smooth font changes */
 }
 
 .project-header p {
@@ -43,7 +51,8 @@ body {
 /* ========== GALLERY GRID ========== */
 .project-gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  /* UPDATED: Reduced minmax to fit small screens */
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
   gap: 3rem;
 }
 
@@ -67,28 +76,25 @@ body {
 }
 
 /* ========== CLICKABLE IMAGE WRAPPER ========== */
-/* This keeps image layout identical while making it an <a> block */
 .project-image-link {
-  display: block; /* acts as the image container/link */
+  display: block;
   width: 100%;
   overflow: hidden;
-  line-height: 0; /* removes whitespace under img */
+  line-height: 0;
   border-bottom: 2px solid rgba(0, 229, 255, 0.4);
-  /* Keep stacking context low so content sits above when needed */
   position: relative;
   z-index: 1;
 }
 
 /* ========== IMAGE ========== */
-/* Keep original sizing and transitions so visuals don't change */
 .project-image-link img,
 .project-card img {
   display: block;
   width: 100%;
   height: 220px;
   object-fit: cover;
-  transition: transform 0.5s ease, opacity 0.4s ease;
-  -webkit-backface-visibility: hidden; /* smoother transform */
+  transition: transform 0.5s ease, opacity 0.4s ease, height 0.3s ease;
+  -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   will-change: transform, opacity;
   cursor: pointer;
@@ -96,17 +102,25 @@ body {
   z-index: 1;
 }
 
-/* Hover zoom kept identical */
 .project-card:hover .project-image-link img,
 .project-card:hover img {
   opacity: 0.9;
   transform: scale(1.05);
 }
 
+/* ========== VIDEO PREVIEW ========== */
+.project-card video {
+  width: 100%;
+  height: 220px; /* Matched to img height */
+  object-fit: cover;
+  border-bottom: 2px solid rgba(0, 229, 255, 0.4);
+  transition: height 0.3s ease;
+}
+
 /* ========== CONTENT ========== */
 .project-card-content {
   position: relative;
-  z-index: 2; /* ensure content/buttons are above image */
+  z-index: 2;
   padding: 2rem;
   flex: 1;
 }
@@ -124,7 +138,7 @@ body {
   line-height: 1.6;
 }
 
-/* ========== BUTTONS (UPDATED) ========== */
+/* ========== BUTTONS ========== */
 .project-buttons {
   display: flex;
   justify-content: space-between;
@@ -133,17 +147,13 @@ body {
   gap: 1rem;
 }
 
-/* === MODIFIED - NOW STYLED FOR ICON BY DEFAULT === */
 .project-buttons a {
-  display: inline-flex; /* Use flex to center icon */
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  
-  /* Make it a circle */
-  width: 4.5rem;  /* Fixed width */
-  height: 4.5rem; /* Fixed height */
-  border-radius: 50%; /* Makes it circular */
-
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
   border: 1px solid var(--main-color);
   color: var(--main-color);
   font-weight: 600;
@@ -157,12 +167,10 @@ body {
   cursor: pointer;
 }
 
-/* === NEW - STYLES THE ICON INSIDE THE LINK === */
 .project-buttons a i {
-  font-size: 2.6rem; /* Adjust icon size */
-  line-height: 0; /* Helps with flex centering */
+  font-size: 2.6rem;
+  line-height: 0;
 }
-
 
 .project-buttons a:hover {
   background: var(--main-color);
@@ -171,25 +179,16 @@ body {
   box-shadow: 0 0 2px #00e5ff, 0 0 5px #00bcd4, 0 0 80px #0077ff;
 }
 
-/* === MODIFIED - OVERRIDES FOR TEXT BUTTON === */
 .project-buttons a.live {
-  /* Revert to auto sizing for text */
   width: auto;
   height: auto;
-  
-  /* Use padding for text button shape */
   padding: 1rem 2rem;
-  
-  /* Revert to pill shape */
   border-radius: 3rem;
   letter-spacing: 0.1rem;
-
-  /* Original styles */
   background: var(--main-color);
   color: #000;
 }
 
-/* Hide any icons that might be in a .live button */
 .project-buttons a.live i {
   display: none;
 }
@@ -219,10 +218,48 @@ body {
   box-shadow: 0 0 10px #00e5ff, 0 0 20px #3fdd9b;
 }
 
-/* ========== MOBILE RESPONSIVE ========== */
-@media (max-width: 768px) {
+/* =================================== */
+/* NEW RESPONSIVE MEDIA QUERIES     */
+/* =================================== */
+
+/* --- Large Desktops (Optional) --- */
+@media (max-width: 1200px) {
+  body {
+    padding: 8rem 8% 5rem;
+  }
+}
+
+/* --- Tablets & Small Desktops --- */
+@media (max-width: 992px) {
+  body {
+    padding: 8rem 6% 5rem;
+  }
+
+  .project-gallery {
+    gap: 2.5rem;
+  }
+
   .project-header h1 {
-    font-size: 3.5rem;
+    font-size: 4.2rem;
+  }
+}
+
+/* --- Small Tablets --- */
+@media (max-width: 768px) {
+  body {
+    padding: 7rem 5% 4rem;
+  }
+
+  .project-header h1 {
+    font-size: 3.8rem;
+  }
+
+  .project-header p {
+    font-size: 1.6rem;
+  }
+
+  .project-card-content {
+    padding: 1.8rem;
   }
 
   .project-card-content h3 {
@@ -230,20 +267,65 @@ body {
   }
 
   .project-card-content p {
-    font-size: 1.4rem;
+    font-size: 1.45rem;
   }
 
-  /* Slightly reduce image height on small screens for balance */
   .project-image-link img,
-  .project-card img {
-    height: 180px;
+  .project-card img,
+  .project-card video {
+    height: 200px;
+  }
+
+  .project-buttons {
+    flex-wrap: wrap; /* Allows buttons to stack if needed */
+    justify-content: flex-start;
   }
 }
 
-/* ========== VIDEO PREVIEW (FROM PREVIOUS CONVO) ========== */
-.project-card video {
-  width: 100%;
-  height: 220px; /* Matched to your img height */
-  object-fit: cover; /* This makes the video cover the area */
-  border-bottom: 2px solid rgba(0, 229, 255, 0.4);
+/* --- Mobile Phones --- */
+@media (max-width: 480px) {
+  body {
+    padding: 6rem 4% 4rem;
+  }
+
+  .project-gallery {
+    gap: 2rem;
+  }
+
+  .project-header h1 {
+    font-size: 3.2rem;
+  }
+
+  .project-header p {
+    font-size: 1.5rem;
+  }
+
+  .project-card-content {
+    padding: 1.5rem;
+  }
+
+  .project-image-link img,
+  .project-card img,
+  .project-card video {
+    height: 180px;
+  }
+
+  .project-buttons a {
+    width: 4.2rem;
+    height: 4.2rem;
+  }
+
+  .project-buttons a i {
+    font-size: 2.2rem;
+  }
+
+  .project-buttons a.live {
+    padding: 0.8rem 1.8rem;
+  }
+
+  .back-btn {
+    margin-top: 3rem;
+    display: block; /* Makes it full-width for easy tapping */
+    text-align: center;
+  }
 }

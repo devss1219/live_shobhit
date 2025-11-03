@@ -3,6 +3,8 @@ document.addEventListener("DOMContentLoaded", () => {
   setupMenu();
   loadProjects();
   setupTestimonials();
+  setupTypewriter();
+  setupScrollSpy(); // <-- NEW: Call the scrollspy function
 });
 
 // === NAVBAR / HAMBURGER ===
@@ -45,7 +47,7 @@ async function loadProjects() {
         <div class="service-icon"><i class="bx ${escapeHtml(project.icon)}"></i></div>
         <h3>${escapeHtml(project.title)}</h3>
         <p>${escapeHtml(project.description)}</p>
-        <a href="${escapeAttr(project.link)}" class="btn">Read More</a>
+        <a href="${escapeHtml(project.link)}" class="btn">Read More</a>
       `;
       container.appendChild(box);
     });
@@ -69,8 +71,9 @@ function setupTestimonials() {
 
   // --- render reviews ---
   function renderReviews() {
-    // Remove only dynamic boxes
-    testimonialList.querySelectorAll(".testimonial-box.dynamic").forEach((e) => e.remove());
+    testimonialList
+      .querySelectorAll(".testimonial-box.dynamic")
+      .forEach((e) => e.remove());
 
     reviews.forEach((r, index) => {
       const box = document.createElement("div");
@@ -107,12 +110,13 @@ function setupTestimonials() {
   if (form) {
     const stars = form.querySelectorAll(".rating-stars .star");
 
-    // rating stars logic
     if (stars && stars.length) {
       stars.forEach((star) => {
         star.addEventListener("click", () => {
           selectedRating = parseInt(star.dataset.value, 10);
-          stars.forEach((s, i) => s.classList.toggle("active", i < selectedRating));
+          stars.forEach((s, i) =>
+            s.classList.toggle("active", i < selectedRating)
+          );
         });
       });
     }
@@ -130,13 +134,21 @@ function setupTestimonials() {
       }
 
       const initial = name.charAt(0).toUpperCase();
-      const newReview = { name, email, role, message, rating: selectedRating, initial };
+      const newReview = {
+        name,
+        email,
+        role,
+        message,
+        rating: selectedRating,
+        initial,
+      };
       reviews.push(newReview);
       localStorage.setItem("reviews", JSON.stringify(reviews));
 
       form.reset();
       selectedRating = 0;
-      if (stars && stars.length) stars.forEach((s) => s.classList.remove("active"));
+      if (stars && stars.length)
+        stars.forEach((s) => s.classList.remove("active"));
       renderReviews();
     });
   }
@@ -161,6 +173,89 @@ function setupTestimonials() {
   renderReviews();
 }
 
+// === TYPEWRITER EFFECT ===
+function setupTypewriter() {
+  const typedTextSpan = document.getElementById("typewriter");
+  if (!typedTextSpan) return;
+
+  typedTextSpan.textContent = "";
+
+  const textArray = [
+    "Full Stack Developer",
+    "Backend Developer",
+    "Programmer",
+    "MERN Developer",
+  ];
+
+  const typingSpeed = 100;
+  const erasingSpeed = 60;
+  const newTextDelay = 1000;
+
+  let textArrayIndex = 0;
+  let charIndex = 0;
+
+  function type() {
+    if (charIndex < textArray[textArrayIndex].length) {
+      typedTextSpan.textContent += textArray[textArrayIndex].charAt(charIndex);
+      charIndex++;
+      requestAnimationFrame(() => setTimeout(type, typingSpeed));
+    } else {
+      setTimeout(erase, newTextDelay);
+    }
+  }
+
+  function erase() {
+    if (charIndex > 0) {
+      typedTextSpan.textContent = textArray[textArrayIndex].substring(
+        0,
+        charIndex - 1
+      );
+      charIndex--;
+      requestAnimationFrame(() => setTimeout(erase, erasingSpeed));
+    } else {
+      textArrayIndex = (textArrayIndex + 1) % textArray.length;
+      setTimeout(type, 400);
+    }
+  }
+  setTimeout(type, 1000);
+}
+
+// === SCROLLSPY (ACTIVE NAV LINK ON SCROLL) ===
+// <-- NEW: This entire function is new
+function setupScrollSpy() {
+  const sections = document.querySelectorAll("section[id]");
+  const navLinks = document.querySelectorAll(".navbar a");
+  const header = document.querySelector(".header");
+
+  if (!sections.length || !navLinks.length || !header) return;
+
+  const headerHeight = header.offsetHeight;
+
+  function updateActiveLink() {
+    const scrollY = window.scrollY;
+    let currentSectionId = "";
+
+    // Find the current section
+    sections.forEach((section) => {
+      const sectionTop = section.offsetTop - headerHeight - 1; // -1 to be precise
+      if (scrollY >= sectionTop) {
+        currentSectionId = section.getAttribute("id");
+      }
+    });
+
+    // Update the nav links
+    navLinks.forEach((link) => {
+      link.classList.remove("active");
+      if (link.getAttribute("href") === `#${currentSectionId}`) {
+        link.classList.add("active");
+      }
+    });
+  }
+
+  window.addEventListener("scroll", updateActiveLink);
+  updateActiveLink(); // Run once on page load
+}
+
 // === HELPERS ===
 function escapeHtml(unsafe) {
   if (unsafe === null || unsafe === undefined) return "";
@@ -170,9 +265,4 @@ function escapeHtml(unsafe) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
-}
-
-function escapeAttr(s) {
-  if (s === null || s === undefined) return "";
-  return String(s).replace(/"/g, "%22").replace(/'/g, "%27");
 }
