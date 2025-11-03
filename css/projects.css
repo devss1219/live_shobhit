@@ -1,0 +1,249 @@
+/* =============================== */
+/* PROJECT DETAILS PAGE STYLING    */
+/* Neon Blue + Galaxy Gradient     */
+/* =============================== */
+
+:root {
+  --main-color: rgb(0, 255, 251);
+  --text-color: #e0f7fa;
+  --glow: 0 0 5px var(--main-color);
+}
+
+/* ========== BASE ========== */
+body {
+  background: radial-gradient(circle at top left, #001f3f, #001c33 30%, #000814 70%, #000000 100%),
+    linear-gradient(135deg, #0a0f1e 0%, #001933 50%, #000a14 100%);
+  background-blend-mode: overlay;
+  color: var(--text-color);
+  font-family: "Poppins", sans-serif;
+  min-height: 100vh;
+  padding: 10rem 12% 6rem;
+  overflow-x: hidden;
+}
+
+/* ========== HEADER ========== */
+.project-header {
+  text-align: center;
+  margin-bottom: 5rem;
+}
+
+.project-header h1 {
+  font-size: 5rem;
+  font-weight: 800;
+  color: var(--main-color);
+  text-shadow: var(--glow);
+}
+
+.project-header p {
+  font-size: 1.8rem;
+  color: rgba(200, 240, 255, 0.7);
+  margin-top: 1rem;
+}
+
+/* ========== GALLERY GRID ========== */
+.project-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 3rem;
+}
+
+/* ========== PROJECT CARD ========== */
+.project-card {
+  position: relative;
+  background: rgba(0, 20, 40, 0.45);
+  border: 2px solid rgba(0, 229, 255, 0.3);
+  border-radius: 1.8rem;
+  box-shadow: 0 0 25px rgba(0, 229, 255, 0.1);
+  overflow: hidden;
+  transition: all 0.4s ease;
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+}
+
+.project-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 0 25px #00e5ff, 0 0 10px #0077ff;
+}
+
+/* ========== CLICKABLE IMAGE WRAPPER ========== */
+/* This keeps image layout identical while making it an <a> block */
+.project-image-link {
+  display: block; /* acts as the image container/link */
+  width: 100%;
+  overflow: hidden;
+  line-height: 0; /* removes whitespace under img */
+  border-bottom: 2px solid rgba(0, 229, 255, 0.4);
+  /* Keep stacking context low so content sits above when needed */
+  position: relative;
+  z-index: 1;
+}
+
+/* ========== IMAGE ========== */
+/* Keep original sizing and transitions so visuals don't change */
+.project-image-link img,
+.project-card img {
+  display: block;
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  transition: transform 0.5s ease, opacity 0.4s ease;
+  -webkit-backface-visibility: hidden; /* smoother transform */
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+
+/* Hover zoom kept identical */
+.project-card:hover .project-image-link img,
+.project-card:hover img {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+/* ========== CONTENT ========== */
+.project-card-content {
+  position: relative;
+  z-index: 2; /* ensure content/buttons are above image */
+  padding: 2rem;
+  flex: 1;
+}
+
+.project-card-content h3 {
+  font-size: 2.2rem;
+  color: var(--main-color);
+  margin-bottom: 1rem;
+  text-shadow: var(--glow);
+}
+
+.project-card-content p {
+  font-size: 1.5rem;
+  color: rgba(230, 255, 255, 0.9);
+  line-height: 1.6;
+}
+
+/* ========== BUTTONS (UPDATED) ========== */
+.project-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+  gap: 1rem;
+}
+
+/* === MODIFIED - NOW STYLED FOR ICON BY DEFAULT === */
+.project-buttons a {
+  display: inline-flex; /* Use flex to center icon */
+  align-items: center;
+  justify-content: center;
+  
+  /* Make it a circle */
+  width: 4.5rem;  /* Fixed width */
+  height: 4.5rem; /* Fixed height */
+  border-radius: 50%; /* Makes it circular */
+
+  border: 1px solid var(--main-color);
+  color: var(--main-color);
+  font-weight: 600;
+  transition: 0.3s ease;
+  box-shadow: 0 0 5px #00e5ff, 0 0 20px #00bcd4, 0 0 30px #0077ff;
+  background: rgba(0, 0, 0, 0.2);
+  text-shadow: 0 0 8px #00e5ff;
+  position: relative;
+  z-index: 3;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* === NEW - STYLES THE ICON INSIDE THE LINK === */
+.project-buttons a i {
+  font-size: 2.6rem; /* Adjust icon size */
+  line-height: 0; /* Helps with flex centering */
+}
+
+
+.project-buttons a:hover {
+  background: var(--main-color);
+  color: #000;
+  transform: translateY(-3px);
+  box-shadow: 0 0 2px #00e5ff, 0 0 5px #00bcd4, 0 0 80px #0077ff;
+}
+
+/* === MODIFIED - OVERRIDES FOR TEXT BUTTON === */
+.project-buttons a.live {
+  /* Revert to auto sizing for text */
+  width: auto;
+  height: auto;
+  
+  /* Use padding for text button shape */
+  padding: 1rem 2rem;
+  
+  /* Revert to pill shape */
+  border-radius: 3rem;
+  letter-spacing: 0.1rem;
+
+  /* Original styles */
+  background: var(--main-color);
+  color: #000;
+}
+
+/* Hide any icons that might be in a .live button */
+.project-buttons a.live i {
+  display: none;
+}
+
+.project-buttons a.live:hover {
+  background: #000;
+  color: var(--main-color);
+  box-shadow: 0 0 25px #00e5ff, 0 0 50px #0077ff;
+}
+
+/* ========== BACK BUTTON ========== */
+.back-btn {
+  display: inline-block;
+  margin-top: 5rem;
+  font-size: 1.6rem;
+  color: var(--main-color);
+  border: 1px solid var(--main-color);
+  padding: 1rem 2rem;
+  border-radius: 3rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+}
+
+.back-btn:hover {
+  background: var(--main-color);
+  color: #000;
+  box-shadow: 0 0 10px #00e5ff, 0 0 20px #3fdd9b;
+}
+
+/* ========== MOBILE RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .project-header h1 {
+    font-size: 3.5rem;
+  }
+
+  .project-card-content h3 {
+    font-size: 2rem;
+  }
+
+  .project-card-content p {
+    font-size: 1.4rem;
+  }
+
+  /* Slightly reduce image height on small screens for balance */
+  .project-image-link img,
+  .project-card img {
+    height: 180px;
+  }
+}
+
+/* ========== VIDEO PREVIEW (FROM PREVIOUS CONVO) ========== */
+.project-card video {
+  width: 100%;
+  height: 220px; /* Matched to your img height */
+  object-fit: cover; /* This makes the video cover the area */
+  border-bottom: 2px solid rgba(0, 229, 255, 0.4);
+}
