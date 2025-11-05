@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-R" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Shobhit WELCOMES YOU ALL</title>
 
@@ -125,6 +125,15 @@
       /* --- END OF ADDED CSS --- */
 
     </style>
+    
+    <style>
+      /* Optional fade animation */
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    </style>
+    
   </head>
 
   <body>
@@ -410,5 +419,133 @@
     </script>
 
     <script src="script.js"></script>
+
+    <script type="module">
+      // Import Firebase modules (v10+ Modular SDK)
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+      // --- IMPORT UPDATED ---
+      import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+
+      // 1️⃣ Firebase Config
+      const firebaseConfig = {
+        apiKey: "AIzaSyBH5rDvoaS6JskBZfXA0sabx5ja8S_pnww",
+        authDomain: "portfolio-testimonials-f8b28.firebaseapp.com",
+        databaseURL: "https://portfolio-testimonials-f8b28-default-rtdb.firebaseio.com",
+        projectId: "portfolio-testimonials-f8b28",
+        storageBucket: "portfolio-testimonials-f8b28.appspot.com",
+        messagingSenderId: "695826539631",
+        appId: "1:695826539631:web:b04fd7852bb3412d082fba",
+        measurementId: "G-JFSXTF4QL3"
+      };
+
+      // 2️⃣ Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+
+      // 3️⃣ Handle Review Form Submission
+      const form = document.getElementById("reviewForm");
+      const msg = document.getElementById("reviewMsg");
+      const testimonialList = document.getElementById("testimonialList");
+      let selectedRating = 0;
+
+      // ⭐ Star rating click handler
+      document.querySelectorAll(".rating-stars .star").forEach(star => {
+        star.addEventListener("click", () => {
+          selectedRating = parseInt(star.getAttribute("data-value"));
+          document.querySelectorAll(".rating-stars .star").forEach(s => {
+            s.classList.toggle("active", parseInt(s.getAttribute("data-value")) <= selectedRating);
+          });
+        });
+      });
+
+      // 💬 Submit form data to Firebase
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const name = document.getElementById("reviewerName").value.trim();
+        const email = document.getElementById("reviewerEmail").value.trim();
+        const role = document.getElementById("reviewerRole").value.trim();
+        const message = document.getElementById("reviewMessage").value.trim();
+
+        if (!name || !email || !role || !message || selectedRating === 0) {
+          msg.textContent = "⚠️ Please fill all fields and select a rating.";
+          msg.style.color = "red";
+          return;
+        }
+
+        try {
+          await push(ref(db, "testimonials"), {
+            name,
+            email,
+            role,
+            message,
+            rating: selectedRating,
+            date: new Date().toISOString()
+          });
+
+          msg.textContent = "✅ Review submitted successfully!";
+          msg.style.color = "green";
+          form.reset();
+          selectedRating = 0;
+          document.querySelectorAll(".rating-stars .star").forEach(s => s.classList.remove("active"));
+        } catch (error) {
+          console.error("Error submitting review:", error);
+          msg.textContent = "❌ Something went wrong. Please try again.";
+          msg.style.color = "red";
+        }
+      });
+
+      // 🧠 --- NEW FUNCTION FROM YOU (REPLACES OLD CODE) ---
+      function displayTestimonials() {
+        testimonialList.innerHTML = "";
+
+        // --- VARIABLE FIXED: 'db' ---
+        const testimonialsRef = ref(db, "testimonials/");
+        onValue(testimonialsRef, (snapshot) => {
+          testimonialList.innerHTML = "";
+
+          snapshot.forEach((childSnapshot) => {
+            const data = childSnapshot.val();
+            const key = childSnapshot.key;
+
+            const testimonialCard = `
+              <div class="testimonial-card">
+                <div class="testimonial-content">
+                  <p class="testimonial-message">"${data.message}"</p>
+                </div>
+                <div class="testimonial-author">
+                  <h3>${data.name}</h3>
+                  <p class="testimonial-role">${data.role}</p>
+                </div>
+                <div class="testimonial-footer">
+                  <div class="testimonial-rating">
+                    ${"★".repeat(data.rating)}${"☆".repeat(5 - data.rating)}
+                  </div>
+                  <button class="delete-btn" data-id="${key}">🗑️ Delete</button>
+                </div>
+              </div>
+            `;
+
+            testimonialList.insertAdjacentHTML("afterbegin", testimonialCard);
+          });
+
+          // Delete button functionality
+          document.querySelectorAll(".delete-btn").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+              const id = e.target.getAttribute("data-id");
+              // --- VARIABLE FIXED: 'db' ---
+              remove(ref(db, "testimonials/" + id))
+                .then(() => alert("Review deleted successfully!"))
+                .catch((error) => console.error("Delete failed:", error));
+            });
+          });
+        });
+      }
+      
+      // 📞 --- CALLING YOUR NEW FUNCTION ---
+      displayTestimonials();
+
+    </script>
+    
   </body>
 </html>
