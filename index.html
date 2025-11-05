@@ -33,6 +33,97 @@
           border-color: transparent;
         }
       }
+
+      /* --- ADDED CSS FOR RESPONSIVE LAYOUT --- */
+      /* Default styles for larger screens (desktop first approach) */
+      .home {
+        display: flex;
+        justify-content: center; /* Center horizontally */
+        align-items: center; /* Center vertically */
+        gap: 3rem; /* Space between content and image */
+        padding: 5rem 0; /* Add some padding for the section */
+        min-height: 100vh; /* Ensure it takes full viewport height */
+        text-align: left; /* Default text alignment for desktop */
+      }
+
+      .home-content {
+        flex: 1; /* Allow content to take available space */
+        max-width: 50%; /* Limit content width */
+        display: flex; /* Make home-content a flex container */
+        flex-direction: column; /* Stack its children (h1, h3, p, buttons) vertically */
+        align-items: flex-start; /* Align text and buttons to the left */
+      }
+
+      .home-image {
+        flex: 1; /* Allow image to take available space */
+        max-width: 40%; /* Limit image width */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .home-image img {
+        max-width: 100%; /* Ensure image scales within its container */
+        height: auto;
+        /* This uses your existing color variable for consistency */
+        box-shadow: 0 0 15px var(--main-color, #00ffff);
+        border-radius: 50%; /* Assumes a portrait-style image */
+      }
+
+      .btn-group,
+      .btn-cv {
+        margin-top: 2rem; /* Space above buttons */
+      }
+
+      /* Media Query for Smaller Screens (e.g., Tablets and Mobiles) */
+      @media (max-width: 992px) {
+        .home {
+          flex-direction: column; /* Stack items vertically */
+          text-align: center; /* Center text for mobile */
+          padding: 10rem 0 5rem; /* Adjust padding for mobile header */
+        }
+
+        .home-content,
+        .home-image {
+          max-width: 90%; /* Allow content/image to take more width */
+          flex: none; /* Remove flex grow */
+        }
+
+        .home-content {
+          order: 2; /* Put content below image */
+          align-items: center; /* Center text and buttons */
+        }
+
+        .home-image {
+          order: 1; /* Put image above content */
+          margin-bottom: 2rem; /* Add space below image */
+        }
+      }
+
+      /* Even smaller screens (e.g., small phones) */
+      @media (max-width: 576px) {
+        .home {
+          padding-top: 8rem;
+          gap: 1rem;
+        }
+        .home-image img {
+          max-width: 80%; /* Smaller image on very small screens */
+        }
+        .home-content h1 {
+          font-size: 2.5rem; /* Adjust heading size */
+        }
+        .home-content h3 {
+          font-size: 1.4rem; /* Adjust heading size */
+        }
+        
+        /* FIX FOR SMALL TEXT */
+        .home-content p {
+          font-size: 1rem; /* Larger, readable font */
+          line-height: 1.5; /* More spacing between lines */
+        }
+      }
+      /* --- END OF ADDED CSS --- */
+
     </style>
   </head>
 
@@ -78,9 +169,9 @@
           <a href="#contact" class="btn">Contact</a>
         </div>
 
-       <a href="ShobhitResumepro.pdf" download="Shobhit_Resume.pdf" class="btn btn-cv">
-  <i class="fas fa-download"></i> Download CV
-</a>
+        <a href="ShobhitResumepro.pdf" download="Shobhit_Resume.pdf" class="btn btn-cv">
+          <i class="fas fa-download"></i> Download CV
+        </a>
       </div>
 
       <div class="home-image">
