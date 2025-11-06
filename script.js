@@ -1,10 +1,23 @@
+// === SUPABASE CONNECTION ===
+// 1. FILL IN YOUR KEYS
+const SUPABASE_URL = "https://bpsksfcjdtnxmjlpbvhy.supabase.co"; // <-- LIKE THIS
+
+const SUPABASE_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJwc2tzZmNqZHRueG1qbHBidmh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyNzkxNzEsImV4cCI6MjA3Nzg1NTE3MX0.GrtGS8Ys81agyndp7arwH51jl2yioYvlxsvMkz02DQ4";
+// This creates the connection
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 // === MAIN ENTRY ===
 document.addEventListener("DOMContentLoaded", () => {
   setupMenu();
   loadProjects();
-  setupTestimonials();
   setupTypewriter();
-  setupScrollSpy(); // <-- NEW: Call the scrollspy function
+  setupScrollSpy();
+
+  // --- NEW Testimonial functions ---
+  loadTestimonials(); // Load reviews from Supabase
+  setupReviewForm(); // Set up the review form
+  setupDeleteListener(); // Listen for delete clicks
 });
 
 // === NAVBAR / HAMBURGER ===
@@ -44,7 +57,9 @@ async function loadProjects() {
       const box = document.createElement("div");
       box.className = "service-box";
       box.innerHTML = `
-        <div class="service-icon"><i class="bx ${escapeHtml(project.icon)}"></i></div>
+        <div class="service-icon"><i class="bx ${escapeHtml(
+          project.icon
+        )}"></i></div>
         <h3>${escapeHtml(project.title)}</h3>
         <p>${escapeHtml(project.description)}</p>
         <a href="${escapeHtml(project.link)}" class="btn">Read More</a>
@@ -57,120 +72,150 @@ async function loadProjects() {
   }
 }
 
-// === TESTIMONIALS SYSTEM ===
-function setupTestimonials() {
-  const form = document.getElementById("reviewForm");
-  const testimonialList =
-    document.getElementById("testimonialList") ||
-    document.querySelector(".testimonials");
+// === TESTIMONIALS SYSTEM (NEW SUPABASE VERSION) ===
 
+// Get elements (global for testimonial functions)
+const testimonialList = document.getElementById("testimonialList");
+const reviewForm = document.getElementById("reviewForm");
+const reviewMsg = document.getElementById("reviewMsg");
+
+// --- stars helper (from your old code) ---
+function generateStarsHtml(n) {
+  const c = Math.max(0, Math.min(5, Number(n) || 0));
+  return "★".repeat(c) + "☆".repeat(5 - c);
+}
+
+// --- 1. Load reviews from Supabase ---
+async function loadTestimonials() {
   if (!testimonialList) return;
 
-  let reviews = JSON.parse(localStorage.getItem("reviews") || "[]");
+  // Get all reviews from the 'testimonials' table
+  const { data, error } = await sb.from("testimonials").select("*");
+
+  if (error) {
+    console.error("Error loading testimonials:", error);
+    testimonialList.innerHTML = "<p>Error loading reviews.</p>";
+    return;
+  }
+
+  testimonialList.innerHTML = ""; // Clear the list
+
+  // Loop through the data and build the HTML (using your old structure)
+  data.forEach((review) => {
+    const box = document.createElement("div");
+    box.classList.add("testimonial-box", "dynamic");
+    const initial = escapeHtml(review.name).charAt(0).toUpperCase();
+
+    box.innerHTML = `
+      <div class="testimonial-content">
+        <div class="testimonial-img">
+          <div class="avatar">${initial}</div>
+        </div>
+        <div class="testimonial-text">
+          <i class="bx bxs-quote-alt-left quote-icon"></i>
+          <p>${escapeHtml(review.message)}</p>
+          <i class="bx bxs-quote-alt-right quote-icon"></i>
+        </div>
+      </div>
+      <div class="testimonial-info">
+        <h4>${escapeHtml(review.name)}</h4>
+        <p>${escapeHtml(review.occupation)}</p>
+        <div class="testimonial-stars">${generateStarsHtml(review.rating)}</div>
+        <button class="delete-btn" data-id="${review.id}">Delete</button> </div>
+    `;
+    testimonialList.appendChild(box);
+  });
+}
+
+// --- 2. Set up the review form to submit to Supabase ---
+function setupReviewForm() {
+  if (!reviewForm) return;
+
   let selectedRating = 0;
+  const stars = reviewForm.querySelectorAll(".rating-stars .star");
 
-  // --- render reviews ---
-  function renderReviews() {
-    testimonialList
-      .querySelectorAll(".testimonial-box.dynamic")
-      .forEach((e) => e.remove());
-
-    reviews.forEach((r, index) => {
-      const box = document.createElement("div");
-      box.classList.add("testimonial-box", "dynamic");
-      box.innerHTML = `
-        <div class="testimonial-content">
-          <div class="testimonial-img">
-            <div class="avatar">${escapeHtml(r.initial)}</div>
-          </div>
-          <div class="testimonial-text">
-            <i class="bx bxs-quote-alt-left quote-icon"></i>
-            <p>${escapeHtml(r.message)}</p>
-            <i class="bx bxs-quote-alt-right quote-icon"></i>
-          </div>
-        </div>
-        <div class="testimonial-info">
-          <h4>${escapeHtml(r.name)}</h4>
-          <p>${escapeHtml(r.role)}</p>
-          <div class="testimonial-stars">${generateStarsHtml(r.rating)}</div>
-          <button class="delete-btn" data-index="${index}">Delete</button>
-        </div>
-      `;
-      testimonialList.appendChild(box);
+  // Your star rating logic (untouched)
+  if (stars && stars.length) {
+    stars.forEach((star) => {
+      star.addEventListener("click", () => {
+        selectedRating = parseInt(star.dataset.value, 10);
+        stars.forEach((s, i) =>
+          s.classList.toggle("active", i < selectedRating)
+        );
+      });
     });
   }
 
-  // --- stars helper ---
-  function generateStarsHtml(n) {
-    const c = Math.max(0, Math.min(5, Number(n) || 0));
-    return "★".repeat(c) + "☆".repeat(5 - c);
-  }
+  // Your form submission logic (updated for Supabase)
+  reviewForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = document.getElementById("reviewerName").value.trim();
+    const email = document.getElementById("reviewerEmail").value.trim();
+    const role = document.getElementById("reviewerRole").value.trim();
+    const message = document.getElementById("reviewMessage").value.trim();
 
-  // --- add new review ---
-  if (form) {
-    const stars = form.querySelectorAll(".rating-stars .star");
-
-    if (stars && stars.length) {
-      stars.forEach((star) => {
-        star.addEventListener("click", () => {
-          selectedRating = parseInt(star.dataset.value, 10);
-          stars.forEach((s, i) =>
-            s.classList.toggle("active", i < selectedRating)
-          );
-        });
-      });
+    if (!name || !email || !role || !message || selectedRating === 0) {
+      alert("⚠️ Please fill all fields and give a rating!");
+      return;
     }
 
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const name = document.getElementById("reviewerName").value.trim();
-      const email = document.getElementById("reviewerEmail").value.trim();
-      const role = document.getElementById("reviewerRole").value.trim();
-      const message = document.getElementById("reviewMessage").value.trim();
+    reviewMsg.textContent = "Submitting...";
 
-      if (!name || !email || !role || !message || selectedRating === 0) {
-        alert("⚠️ Please fill all fields and give a rating!");
-        return;
-      }
+    // Insert new review into Supabase
+    const { data, error } = await sb
+      .from("testimonials")
+      .insert([
+        {
+          name: name,
+          occupation: role,
+          message: message,
+          rating: selectedRating,
+        },
+      ]);
 
-      const initial = name.charAt(0).toUpperCase();
-      const newReview = {
-        name,
-        email,
-        role,
-        message,
-        rating: selectedRating,
-        initial,
-      };
-      reviews.push(newReview);
-      localStorage.setItem("reviews", JSON.stringify(reviews));
-
-      form.reset();
+    if (error) {
+      console.error("Error submitting review:", error);
+      reviewMsg.textContent = "Error. Please try again.";
+    } else {
+      reviewMsg.textContent = "Thank you for your review!";
+      reviewForm.reset();
       selectedRating = 0;
       if (stars && stars.length)
         stars.forEach((s) => s.classList.remove("active"));
-      renderReviews();
-    });
-  }
+      loadTestimonials(); // Refresh the list with the new review
+    }
+  });
+}
 
-  // --- delete review with password ---
-  testimonialList.addEventListener("click", (e) => {
+// --- 3. Set up the delete listener (using your password) ---
+function setupDeleteListener() {
+  if (!testimonialList) return;
+
+  // Use event delegation to listen for clicks on delete buttons
+  testimonialList.addEventListener("click", async (e) => {
     const btn = e.target.closest(".delete-btn");
     if (!btn) return;
-    const index = parseInt(btn.dataset.index, 10);
+
+    const id = btn.dataset.id; // Get the database ID we stored
     const password = prompt("Enter admin password to delete:");
+
     if (password === "123777") {
-      reviews.splice(index, 1);
-      localStorage.setItem("reviews", JSON.stringify(reviews));
-      renderReviews();
-      alert("✅ Review deleted successfully.");
-    } else {
+      // Your password
+      // Delete from Supabase where the 'id' matches
+      const { error } = await sb.from("testimonials").delete().eq("id", id);
+
+      if (error) {
+        console.error("Error deleting:", error);
+        alert("❌ Error deleting review.");
+      } else {
+        alert("✅ Review deleted successfully.");
+        loadTestimonials(); // Refresh the list
+      }
+    } else if (password) {
+      // Only show if they typed something
       alert("❌ Incorrect password!");
     }
   });
-
-  // initial render
-  renderReviews();
 }
 
 // === TYPEWRITER EFFECT ===
@@ -221,7 +266,6 @@ function setupTypewriter() {
 }
 
 // === SCROLLSPY (ACTIVE NAV LINK ON SCROLL) ===
-// <-- NEW: This entire function is new
 function setupScrollSpy() {
   const sections = document.querySelectorAll("section[id]");
   const navLinks = document.querySelectorAll(".navbar a");
