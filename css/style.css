@@ -848,20 +848,7 @@ span {
   font-weight: bold;
 }
 
-.delete-btn {
-  margin-top: 10px;
-  background: #ff4b4b;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-}
 
-.delete-btn:hover {
-  background: #e63636;
-}
 
 .star {
   cursor: pointer;
