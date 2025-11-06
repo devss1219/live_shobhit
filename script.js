@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- NEW Testimonial functions ---
   loadTestimonials(); // Load reviews from Supabase
   setupReviewForm(); // Set up the review form
-  setupDeleteListener(); // Listen for delete clicks
+  
 });
 
 // === NAVBAR / HAMBURGER ===
@@ -121,7 +121,7 @@ async function loadTestimonials() {
         <h4>${escapeHtml(review.name)}</h4>
         <p>${escapeHtml(review.occupation)}</p>
         <div class="testimonial-stars">${generateStarsHtml(review.rating)}</div>
-        <button class="delete-btn" data-id="${review.id}">Delete</button> </div>
+       
     `;
     testimonialList.appendChild(box);
   });
@@ -187,36 +187,8 @@ function setupReviewForm() {
   });
 }
 
-// --- 3. Set up the delete listener (using your password) ---
-function setupDeleteListener() {
-  if (!testimonialList) return;
 
-  // Use event delegation to listen for clicks on delete buttons
-  testimonialList.addEventListener("click", async (e) => {
-    const btn = e.target.closest(".delete-btn");
-    if (!btn) return;
 
-    const id = btn.dataset.id; // Get the database ID we stored
-    const password = prompt("Enter admin password to delete:");
-
-    if (password === "123777") {
-      // Your password
-      // Delete from Supabase where the 'id' matches
-      const { error } = await sb.from("testimonials").delete().eq("id", id);
-
-      if (error) {
-        console.error("Error deleting:", error);
-        alert("❌ Error deleting review.");
-      } else {
-        alert("✅ Review deleted successfully.");
-        loadTestimonials(); // Refresh the list
-      }
-    } else if (password) {
-      // Only show if they typed something
-      alert("❌ Incorrect password!");
-    }
-  });
-}
 
 // === TYPEWRITER EFFECT ===
 function setupTypewriter() {
@@ -310,3 +282,4 @@ function escapeHtml(unsafe) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+
