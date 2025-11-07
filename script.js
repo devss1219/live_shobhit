@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- NEW Testimonial functions ---
   loadTestimonials(); // Load reviews from Supabase
   setupReviewForm(); // Set up the review form
-  
+  setupSeeMoreButton(); // <-- NEW: Add listener for the see more button
 });
 
 // === NAVBAR / HAMBURGER ===
@@ -78,6 +78,8 @@ async function loadProjects() {
 const testimonialList = document.getElementById("testimonialList");
 const reviewForm = document.getElementById("reviewForm");
 const reviewMsg = document.getElementById("reviewMsg");
+const seeMoreBtn = document.getElementById("seeMoreBtn"); // <-- NEW
+let allReviews = []; // <-- NEW: This will store all reviews
 
 // --- stars helper (from your old code) ---
 function generateStarsHtml(n) {
@@ -85,12 +87,15 @@ function generateStarsHtml(n) {
   return "★".repeat(c) + "☆".repeat(5 - c);
 }
 
-// --- 1. Load reviews from Supabase ---
+// --- 1. Load reviews from Supabase (UPDATED with new sorting) ---
 async function loadTestimonials() {
   if (!testimonialList) return;
 
-  // Get all reviews from the 'testimonials' table
-  const { data, error } = await sb.from("testimonials").select("*");
+  // 1. Get all reviews. We remove the .order() from here
+  //    because we will do a more complex sort in JavaScript.
+  const { data: reviews, error } = await sb
+    .from("testimonials")
+    .select("*");
 
   if (error) {
     console.error("Error loading testimonials:", error);
@@ -98,10 +103,38 @@ async function loadTestimonials() {
     return;
   }
 
+  // Handle case with no reviews
+  if (!reviews || reviews.length === 0) {
+    testimonialList.innerHTML = "<p>Be the first to leave a review!</p>";
+    seeMoreBtn.style.display = "none";
+    return;
+  }
+
+  // --- NEW SORTING LOGIC ---
+  
+  // 2. Find the single longest review
+  const longestReview = reviews.reduce((longest, current) => {
+    return current.message.length > longest.message.length ? current : longest;
+  }, reviews[0]); // Start by assuming the first review is the longest
+
+  // 3. Get all OTHER reviews (excluding the longest one)
+  const otherReviews = reviews.filter(review => review.id !== longestReview.id);
+
+  // 4. Sort the OTHER reviews by message length (descending)
+  otherReviews.sort((a, b) => b.message.length - a.message.length);
+
+  // 5. Create our final sorted list: longest review first, then the rest.
+  allReviews = [longestReview, ...otherReviews];
+  // --- END OF NEW SORTING LOGIC ---
+
+
   testimonialList.innerHTML = ""; // Clear the list
 
+  // --- UPDATED: Only show the first 5 ---
+  const reviewsToShow = allReviews.slice(0, 5);
+
   // Loop through the data and build the HTML (using your old structure)
-  data.forEach((review) => {
+  reviewsToShow.forEach((review) => {
     const box = document.createElement("div");
     box.classList.add("testimonial-box", "dynamic");
     const initial = escapeHtml(review.name).charAt(0).toUpperCase();
@@ -121,11 +154,19 @@ async function loadTestimonials() {
         <h4>${escapeHtml(review.name)}</h4>
         <p>${escapeHtml(review.occupation)}</p>
         <div class="testimonial-stars">${generateStarsHtml(review.rating)}</div>
-       
+        
     `;
     testimonialList.appendChild(box);
   });
+
+  // --- UPDATED: Show or hide the "See More" button ---
+  if (allReviews.length > 5) {
+    seeMoreBtn.style.display = "block"; // Show the button
+  } else {
+    seeMoreBtn.style.display = "none"; // Hide if 5 or less
+  }
 }
+
 
 // --- 2. Set up the review form to submit to Supabase ---
 function setupReviewForm() {
@@ -187,8 +228,42 @@ function setupReviewForm() {
   });
 }
 
+// --- 3. NEW: Setup the "See More" button ---
+function setupSeeMoreButton() {
+  if (!seeMoreBtn) return;
 
+  seeMoreBtn.addEventListener("click", () => {
+    testimonialList.innerHTML = ""; // Clear the list of 2
 
+    // Loop through ALL reviews and render them
+    allReviews.forEach((review) => {
+      const box = document.createElement("div");
+      box.classList.add("testimonial-box", "dynamic");
+      const initial = escapeHtml(review.name).charAt(0).toUpperCase();
+
+      box.innerHTML = `
+        <div class="testimonial-content">
+          <div class="testimonial-img">
+            <div class="avatar">${initial}</div>
+          </div>
+          <div class="testimonial-text">
+            <i class="bx bxs-quote-alt-left quote-icon"></i>
+            <p>${escapeHtml(review.message)}</p>
+            <i class="bx bxs-quote-alt-right quote-icon"></i>
+          </div>
+        </div>
+        <div class="testimonial-info">
+          <h4>${escapeHtml(review.name)}</h4>
+          <p>${escapeHtml(review.occupation)}</p>
+          <div class="testimonial-stars">${generateStarsHtml(review.rating)}</div>
+        </div>
+      `;
+      testimonialList.appendChild(box);
+    });
+
+    seeMoreBtn.style.display = "none"; // Hide the button after it's clicked
+  });
+}
 
 // === TYPEWRITER EFFECT ===
 function setupTypewriter() {
@@ -282,4 +357,3 @@ function escapeHtml(unsafe) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
-
